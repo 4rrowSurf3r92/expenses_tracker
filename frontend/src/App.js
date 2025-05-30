@@ -22,22 +22,40 @@ const ExpenseTracker = () => {
     const savedBalance = localStorage.getItem('expenseTracker_balance');
     const savedTransactions = localStorage.getItem('expenseTracker_transactions');
     
-    if (savedBalance) {
-      setBalance(parseFloat(savedBalance));
+    console.log('Loading from localStorage:', { savedBalance, savedTransactions });
+    
+    if (savedBalance && savedBalance !== 'null' && savedBalance !== 'undefined') {
+      const parsedBalance = parseFloat(savedBalance);
+      if (!isNaN(parsedBalance)) {
+        setBalance(parsedBalance);
+      }
     }
     
-    if (savedTransactions) {
-      setTransactions(JSON.parse(savedTransactions));
+    if (savedTransactions && savedTransactions !== 'null' && savedTransactions !== 'undefined') {
+      try {
+        const parsedTransactions = JSON.parse(savedTransactions);
+        if (Array.isArray(parsedTransactions)) {
+          setTransactions(parsedTransactions);
+        }
+      } catch (error) {
+        console.error('Error parsing transactions from localStorage:', error);
+      }
     }
   }, []);
 
   // Save data to localStorage whenever balance or transactions change
   useEffect(() => {
-    localStorage.setItem('expenseTracker_balance', balance.toString());
+    if (balance !== 0 || transactions.length > 0) {
+      localStorage.setItem('expenseTracker_balance', balance.toString());
+      console.log('Saved balance to localStorage:', balance);
+    }
   }, [balance]);
 
   useEffect(() => {
-    localStorage.setItem('expenseTracker_transactions', JSON.stringify(transactions));
+    if (transactions.length > 0) {
+      localStorage.setItem('expenseTracker_transactions', JSON.stringify(transactions));
+      console.log('Saved transactions to localStorage:', transactions.length);
+    }
   }, [transactions]);
 
   const addTransaction = (amount, description, type, category = 'Other') => {
